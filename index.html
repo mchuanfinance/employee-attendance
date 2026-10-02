@@ -1,667 +1,748 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  >
-
-  <title>員工打卡</title>
+  <title>員工出勤打卡系統</title>
 
   <!-- LINE LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-
   <style>
-
     * {
       box-sizing: border-box;
     }
 
-    html,
     body {
       margin: 0;
-      padding: 0;
-      min-height: 100%;
-    }
-
-    body {
-
+      padding: 20px;
+      background: #f5f6f8;
       font-family:
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
-        "Noto Sans TC",
+        "Microsoft JhengHei",
         Arial,
         sans-serif;
-
-      background: #f5f5f5;
-
       color: #333;
-
-      padding:
-        20px
-        16px
-        30px;
-
     }
-
 
     .container {
-
-      width: 100%;
-
-      max-width: 430px;
-
-      margin:
-        0 auto;
-
-      background: #fff;
-
-      border-radius: 18px;
-
-      padding:
-        28px
-        20px
-        24px;
-
-      box-shadow:
-        0 4px 18px
-        rgba(0, 0, 0, 0.08);
-
+      max-width: 500px;
+      margin: 0 auto;
     }
 
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    }
 
     h1 {
-
-      margin:
-        0 0 8px;
-
       text-align: center;
-
-      font-size: 28px;
-
-      font-weight: 700;
-
+      font-size: 24px;
+      margin: 0 0 20px;
     }
 
-
-    .subtitle {
-
-      text-align: center;
-
-      color: #777;
-
-      font-size: 14px;
-
-      margin-bottom: 24px;
-
+    h2 {
+      font-size: 18px;
+      margin: 0 0 15px;
     }
-
-
-    #employee {
-
-      background: #f7f7f7;
-
-      border-radius: 12px;
-
-      padding: 16px;
-
-      text-align: center;
-
-      line-height: 1.7;
-
-      margin-bottom: 20px;
-
-      min-height: 55px;
-
-    }
-
-
-    .employee-name {
-
-      font-size: 20px;
-
-      font-weight: 700;
-
-    }
-
 
     .status {
-
-      font-size: 14px;
-
-      color: #666;
-
-    }
-
-
-    button {
-
-      width: 100%;
-
-      border: none;
-
-      border-radius: 12px;
-
-      padding: 17px 15px;
-
-      margin-top: 12px;
-
-      font-size: 19px;
-
-      font-weight: 600;
-
-      cursor: pointer;
-
-      transition:
-        opacity 0.2s,
-        transform 0.1s;
-
-    }
-
-
-    button:active {
-
-      transform: scale(0.98);
-
-    }
-
-
-    button:disabled {
-
-      opacity: 0.5;
-
-      cursor: not-allowed;
-
-      transform: none;
-
-    }
-
-
-    .work {
-
-      background: #4caf50;
-
-      color: white;
-
-    }
-
-
-    .off {
-
-      background: #f44336;
-
-      color: white;
-
-    }
-
-
-    #message {
-
-      margin-top: 22px;
-
       padding: 14px;
-
       border-radius: 10px;
-
-      font-size: 15px;
-
-      line-height: 1.7;
-
-      text-align: center;
-
-      min-height: 20px;
-
+      background: #f1f3f5;
+      margin-bottom: 16px;
+      line-height: 1.6;
       word-break: break-word;
-
     }
 
-
-    .message-normal {
-
-      background: #f5f5f5;
-
-      color: #333;
-
-    }
-
-
-    .message-success {
-
+    .status.success {
       background: #e8f5e9;
-
       color: #2e7d32;
-
     }
 
-
-    .message-error {
-
+    .status.error {
       background: #ffebee;
-
       color: #c62828;
-
     }
 
+    .status.loading {
+      background: #fff8e1;
+      color: #8d6e00;
+    }
+
+    .binding-info {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .binding-row {
+      margin-bottom: 14px;
+    }
+
+    .binding-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .binding-label {
+      display: block;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .binding-value {
+      font-size: 15px;
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .user-id-box {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .user-id {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      line-height: 1.4;
+      word-break: break-all;
+      user-select: all;
+    }
+
+    .copy-btn {
+      flex: 0 0 auto;
+      border: none;
+      background: #495057;
+      color: #fff;
+      border-radius: 8px;
+      padding: 0 14px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .copy-btn:active {
+      opacity: 0.8;
+    }
+
+    .notice {
+      margin-top: 14px;
+      padding: 12px;
+      background: #fff3cd;
+      border-radius: 8px;
+      color: #856404;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    button.attendance-btn {
+      flex: 1;
+      border: none;
+      border-radius: 12px;
+      padding: 16px 10px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    button.attendance-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .work-btn {
+      background: #1976d2;
+    }
+
+    .off-btn {
+      background: #616161;
+    }
 
     .gps-info {
-
-      margin-top: 18px;
-
+      margin-top: 16px;
       padding: 14px;
-
-      background: #fafafa;
-
+      background: #f8f9fa;
       border-radius: 10px;
-
-      font-size: 13px;
-
+      font-size: 14px;
       line-height: 1.7;
-
-      color: #666;
-
-      text-align: left;
-
-      display: none;
-
     }
 
+    .gps-item {
+      margin-bottom: 5px;
+      word-break: break-word;
+    }
+
+    .gps-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .label {
+      color: #666;
+      margin-right: 5px;
+    }
+
+    .result {
+      margin-top: 16px;
+      padding: 15px;
+      border-radius: 10px;
+      display: none;
+      line-height: 1.7;
+    }
+
+    .result.success {
+      display: block;
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .result.error {
+      display: block;
+      background: #ffebee;
+      color: #c62828;
+    }
 
     .footer {
-
-      margin-top: 22px;
-
       text-align: center;
-
-      font-size: 12px;
-
       color: #999;
-
+      font-size: 12px;
+      margin-top: 20px;
     }
 
-
-    .loading {
-
-      display: inline-block;
-
-      width: 16px;
-
-      height: 16px;
-
-      border: 2px solid #ccc;
-
-      border-top-color: #555;
-
-      border-radius: 50%;
-
-      animation: spin 0.8s linear infinite;
-
-      vertical-align: -3px;
-
-      margin-right: 6px;
-
+    .small {
+      font-size: 12px;
+      color: #777;
+      line-height: 1.6;
     }
 
-
-    @keyframes spin {
-
-      to {
-        transform: rotate(360deg);
+    @media (max-width: 400px) {
+      body {
+        padding: 12px;
       }
 
+      .card {
+        padding: 18px;
+      }
+
+      .button-group {
+        gap: 8px;
+      }
+
+      button.attendance-btn {
+        font-size: 16px;
+      }
     }
-
   </style>
-
 </head>
-
 
 <body>
 
-  <div class="container">
+<div class="container">
 
-    <h1>員工打卡</h1>
+  <!-- 標題 -->
+  <div class="card">
+    <h1>員工出勤打卡系統</h1>
 
-    <div class="subtitle">
-      LINE 出勤紀錄系統
+    <div id="loginStatus" class="status loading">
+      正在初始化 LINE 身分驗證...
+    </div>
+  </div>
+
+
+  <!-- 員工綁定資訊 -->
+  <div class="card">
+
+    <h2>員工綁定資訊</h2>
+
+    <div class="binding-info">
+
+      <div class="binding-row">
+        <span class="binding-label">LINE 顯示名稱</span>
+        <div id="lineDisplayName" class="binding-value">
+          讀取中...
+        </div>
+      </div>
+
+      <div class="binding-row">
+        <span class="binding-label">LINE User ID</span>
+
+        <div class="user-id-box">
+
+          <div id="lineUserId" class="user-id">
+            讀取中...
+          </div>
+
+          <button
+            type="button"
+            class="copy-btn"
+            onclick="copyUserId()"
+          >
+            複製
+          </button>
+
+        </div>
+      </div>
+
     </div>
 
+    <div class="notice">
+      第一次設定員工資料時，請將上方的
+      <strong>LINE User ID</strong>
+      複製後，填入 Google Sheet
+      「員工名單」的 B 欄。
+      <br><br>
 
-    <div id="employee">
-
-      <span class="loading"></span>
-      正在初始化 LINE...
-
-    </div>
-
-
-    <button
-      id="clockInButton"
-      class="work"
-      onclick="clockIn()"
-      disabled
-    >
-      🟢 上班打卡
-    </button>
-
-
-    <button
-      id="clockOutButton"
-      class="off"
-      onclick="clockOut()"
-      disabled
-    >
-      🔴 下班打卡
-    </button>
-
-
-    <div
-      id="message"
-      class="message-normal"
-    ></div>
-
-
-    <div
-      id="gpsInfo"
-      class="gps-info"
-    ></div>
-
-
-    <div class="footer">
-      GPS 定位僅用於出勤紀錄
+      A 欄：員工姓名<br>
+      B 欄：LINE User ID<br>
+      C 欄：是
     </div>
 
   </div>
 
 
+  <!-- 打卡 -->
+  <div class="card">
+
+    <h2>出勤打卡</h2>
+
+    <div class="button-group">
+
+      <button
+        id="workButton"
+        class="attendance-btn work-btn"
+        onclick="submitAttendance('上班')"
+        disabled
+      >
+        上班打卡
+      </button>
+
+      <button
+        id="offButton"
+        class="attendance-btn off-btn"
+        onclick="submitAttendance('下班')"
+        disabled
+      >
+        下班打卡
+      </button>
+
+    </div>
+
+    <div id="gpsInfo" class="gps-info">
+      <div class="gps-item">
+        <span class="label">GPS：</span>
+        尚未定位
+      </div>
+    </div>
+
+    <div id="result" class="result"></div>
+
+  </div>
+
+
+  <div class="footer">
+    員工出勤打卡系統
+  </div>
+
+</div>
+
+
 <script>
 
-/******************************************************
- * 1. 系統設定
- ******************************************************/
+  // =========================================================
+  // 系統設定
+  // =========================================================
 
-const LIFF_ID =
-  '2011816957-jjlZqcSN';
+  const LIFF_ID = '2011816957-jjlZqcSN';
 
-
-const GAS_API_URL =
-  'https://script.google.com/macros/s/AKfycbwxVKjpnDVqmAwa5jg76_pHgFBBBk5T3HSXxjKXnMzAxSHinM-cR3EVu7iNGEv0vTodLw/exec';
+  const GAS_API_URL =
+    'https://script.google.com/macros/s/AKfycbwxVKjpnDVqmAwa5jg76_pHgFBBBk5T3HSXxjKXnMzAxSHinM-cR3EVu7iNGEv0vTodLw/exec';
 
 
-/******************************************************
- * 2. 全域變數
- ******************************************************/
+  // =========================================================
+  // 全域變數
+  // =========================================================
 
-let lineIdToken = null;
+  let lineUserId = '';
+  let lineDisplayName = '';
+  let idToken = '';
 
-let lineProfile = null;
-
-let isSubmitting = false;
-
-
-/******************************************************
- * 3. 頁面初始化
- ******************************************************/
-
-window.addEventListener(
-  'load',
-  initializeLIFF
-);
+  let isSubmitting = false;
 
 
-async function initializeLIFF() {
+  // =========================================================
+  // 頁面初始化
+  // =========================================================
 
-  const employeeElement =
-    document.getElementById('employee');
-
-
-  try {
-
-    employeeElement.innerHTML =
-      '<span class="loading"></span>' +
-      '正在初始化 LINE...';
-
-
-    /**************************************************
-     * 初始化 LIFF
-     **************************************************/
-
-    await liff.init({
-      liffId: LIFF_ID,
-      withLoginOnExternalBrowser: true
-    });
-
-
-    /**************************************************
-     * 如果是在外部瀏覽器且尚未登入
-     **************************************************/
-
-    if (
-      !liff.isLoggedIn() &&
-      !liff.isInClient()
-    ) {
-
-      employeeElement.innerHTML =
-        '<span class="loading"></span>' +
-        '正在進行 LINE 登入...';
-
-
-      liff.login();
-
-      return;
-
-    }
-
-
-    /**************************************************
-     * 取得 ID Token
-     **************************************************/
-
-    lineIdToken =
-      liff.getIDToken();
-
-
-    if (!lineIdToken) {
-
-      throw new Error(
-        '無法取得 LINE ID Token。'
-      );
-
-    }
-
-
-    /**************************************************
-     * 取得前端顯示用的 LINE 個人資料
-     *
-     * 注意：
-     * 這些資料只用於前端顯示。
-     *
-     * 真正身分驗證仍由 ID Token + GAS 完成。
-     **************************************************/
+  window.addEventListener('load', async function () {
 
     try {
 
-      lineProfile =
-        await liff.getProfile();
-
-    } catch (profileError) {
-
-      console.warn(
-        '無法取得 LINE Profile：',
-        profileError
+      updateLoginStatus(
+        '正在初始化 LINE 身分驗證...',
+        'loading'
       );
 
-      lineProfile = null;
+      console.log('① 開始初始化 LIFF');
+
+      await liff.init({
+        liffId: LIFF_ID,
+        withLoginOnExternalBrowser: true
+      });
+
+      console.log('② LIFF SDK 已載入');
+
+      // -----------------------------------------------------
+      // 檢查登入
+      // -----------------------------------------------------
+
+      if (!liff.isLoggedIn()) {
+
+        console.log('尚未登入 LINE');
+
+        if (!liff.isInClient()) {
+
+          updateLoginStatus(
+            '正在開啟 LINE 登入...',
+            'loading'
+          );
+
+          liff.login();
+
+          return;
+
+        } else {
+
+          updateLoginStatus(
+            '請先登入 LINE',
+            'error'
+          );
+
+          return;
+        }
+      }
+
+
+      console.log('③ LINE 已登入');
+
+
+      // -----------------------------------------------------
+      // 取得 ID Token
+      // -----------------------------------------------------
+
+      idToken = liff.getIDToken();
+
+      if (!idToken) {
+
+        throw new Error(
+          '無法取得 LINE 身分驗證資訊，請重新開啟此頁面。'
+        );
+      }
+
+
+      console.log('④ 已取得 LINE ID Token');
+
+
+      // -----------------------------------------------------
+      // 取得 LINE Profile
+      // -----------------------------------------------------
+
+      try {
+
+        const profile = await liff.getProfile();
+
+        lineUserId = profile.userId || '';
+        lineDisplayName = profile.displayName || '';
+
+        console.log(
+          'LINE User ID:',
+          lineUserId
+        );
+
+        console.log(
+          'LINE Display Name:',
+          lineDisplayName
+        );
+
+      } catch (profileError) {
+
+        console.error(
+          '取得 LINE Profile 失敗:',
+          profileError
+        );
+
+      }
+
+
+      // -----------------------------------------------------
+      // 顯示員工綁定資訊
+      // -----------------------------------------------------
+
+      displayBindingInfo();
+
+
+      // -----------------------------------------------------
+      // 完成登入
+      // -----------------------------------------------------
+
+      updateLoginStatus(
+        'LINE 身分驗證成功，可以打卡',
+        'success'
+      );
+
+
+      enableAttendanceButtons();
+
+
+    } catch (error) {
+
+      console.error(
+        'LIFF 初始化錯誤:',
+        error
+      );
+
+      updateLoginStatus(
+        'LINE 身分驗證失敗：' +
+        getErrorMessage(error),
+        'error'
+      );
 
     }
 
-
-    /**************************************************
-     * 顯示員工資訊
-     **************************************************/
-
-    let displayName =
-      'LINE 使用者';
+  });
 
 
-    if (
-      lineProfile &&
-      lineProfile.displayName
-    ) {
+  // =========================================================
+  // 顯示 LINE 綁定資訊
+  // =========================================================
 
-      displayName =
-        lineProfile.displayName;
+  function displayBindingInfo() {
 
+    const nameElement =
+      document.getElementById('lineDisplayName');
+
+    const userIdElement =
+      document.getElementById('lineUserId');
+
+
+    if (lineDisplayName) {
+
+      nameElement.textContent =
+        lineDisplayName;
+
+    } else {
+
+      nameElement.textContent =
+        '無法取得 LINE 顯示名稱';
     }
 
 
-    employeeElement.innerHTML =
+    if (lineUserId) {
 
-      '<div class="employee-name">' +
-      escapeHtml(displayName) +
-      '</div>' +
+      userIdElement.textContent =
+        lineUserId;
 
-      '<div class="status">' +
-      'LINE 身分驗證成功，可以打卡' +
-      '</div>';
+    } else {
 
-
-    /**************************************************
-     * 啟用按鈕
-     **************************************************/
-
-    setButtonsEnabled(true);
-
-
-    showMessage(
-      'LINE 身分確認成功，可以開始打卡。',
-      false
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      'LIFF 初始化錯誤：',
-      error
-    );
-
-
-    employeeElement.innerHTML =
-      '❌ LINE 初始化失敗';
-
-
-    showMessage(
-      '錯誤：' +
-      getErrorMessage(error),
-      true
-    );
-
-
-    setButtonsEnabled(false);
-
-  }
-
-}
-
-
-/******************************************************
- * 4. 上班打卡
- ******************************************************/
-
-function clockIn() {
-
-  startAttendance(
-    '上班'
-  );
-
-}
-
-
-/******************************************************
- * 5. 下班打卡
- ******************************************************/
-
-function clockOut() {
-
-  startAttendance(
-    '下班'
-  );
-
-}
-
-
-/******************************************************
- * 6. 開始打卡
- ******************************************************/
-
-function startAttendance(type) {
-
-  if (isSubmitting) {
-
-    return;
+      userIdElement.textContent =
+        '無法取得 LINE User ID';
+    }
 
   }
 
 
-  if (!lineIdToken) {
+  // =========================================================
+  // 複製 LINE User ID
+  // =========================================================
 
-    showMessage(
-      'LINE 身分尚未完成驗證，請重新開啟打卡系統。',
-      true
-    );
+  async function copyUserId() {
 
-    return;
+    if (!lineUserId) {
+
+      alert(
+        '目前尚未取得 LINE User ID。'
+      );
+
+      return;
+    }
+
+
+    try {
+
+      await navigator.clipboard.writeText(
+        lineUserId
+      );
+
+      alert(
+        'LINE User ID 已複製。'
+      );
+
+    } catch (error) {
+
+      // -----------------------------------------------------
+      // 備援複製方式
+      // -----------------------------------------------------
+
+      try {
+
+        const textArea =
+          document.createElement('textarea');
+
+        textArea.value =
+          lineUserId;
+
+        textArea.style.position =
+          'fixed';
+
+        textArea.style.opacity =
+          '0';
+
+        document.body.appendChild(
+          textArea
+        );
+
+        textArea.focus();
+        textArea.select();
+
+        document.execCommand('copy');
+
+        document.body.removeChild(
+          textArea
+        );
+
+        alert(
+          'LINE User ID 已複製。'
+        );
+
+      } catch (copyError) {
+
+        alert(
+          '複製失敗，請直接長按 LINE User ID 後複製。'
+        );
+
+      }
+
+    }
 
   }
 
 
-  if (!navigator.geolocation) {
+  // =========================================================
+  // 更新登入狀態
+  // =========================================================
 
-    showMessage(
-      '此裝置不支援 GPS 定位。',
-      true
-    );
-
-    return;
-
-  }
-
-
-  isSubmitting = true;
-
-
-  setButtonsEnabled(false);
-
-
-  showMessage(
-    '<span class="loading"></span>' +
-    '正在取得您的 GPS 位置，請稍候...',
-    false
-  );
-
-
-  getLocation(
+  function updateLoginStatus(
+    message,
     type
-  );
+  ) {
 
-}
+    const element =
+      document.getElementById('loginStatus');
+
+    element.textContent =
+      message;
+
+    element.className =
+      'status ' + type;
+  }
 
 
-/******************************************************
- * 7. 取得 GPS
- ******************************************************/
+  // =========================================================
+  // 啟用打卡按鈕
+  // =========================================================
 
-function getLocation(type) {
+  function enableAttendanceButtons() {
 
-  navigator.geolocation.getCurrentPosition(
+    document.getElementById(
+      'workButton'
+    ).disabled = false;
 
-    function(position) {
+    document.getElementById(
+      'offButton'
+    ).disabled = false;
+
+  }
+
+
+  // =========================================================
+  // 停用打卡按鈕
+  // =========================================================
+
+  function disableAttendanceButtons() {
+
+    document.getElementById(
+      'workButton'
+    ).disabled = true;
+
+    document.getElementById(
+      'offButton'
+    ).disabled = true;
+
+  }
+
+
+  // =========================================================
+  // 上班 / 下班打卡
+  // =========================================================
+
+  async function submitAttendance(
+    attendanceType
+  ) {
+
+    if (isSubmitting) {
+      return;
+    }
+
+
+    if (!idToken) {
+
+      showResult(
+        '無法取得 LINE 身分驗證資訊，請重新開啟頁面。',
+        'error'
+      );
+
+      return;
+    }
+
+
+    isSubmitting = true;
+
+    disableAttendanceButtons();
+
+
+    showResult(
+      '正在取得 GPS 定位，請稍候...',
+      'success'
+    );
+
+
+    try {
+
+      // -----------------------------------------------------
+      // 取得 GPS
+      // -----------------------------------------------------
+
+      const position =
+        await getCurrentPosition();
+
 
       const latitude =
         position.coords.latitude;
@@ -673,513 +754,414 @@ function getLocation(type) {
         position.coords.accuracy;
 
 
-      showGPSInfo(
-        latitude,
-        longitude,
-        accuracy
+      // -----------------------------------------------------
+      // 顯示 GPS
+      // -----------------------------------------------------
+
+      document.getElementById(
+        'gpsInfo'
+      ).innerHTML =
+
+        '<div class="gps-item">' +
+        '<span class="label">緯度：</span>' +
+        escapeHtml(latitude) +
+        '</div>' +
+
+        '<div class="gps-item">' +
+        '<span class="label">經度：</span>' +
+        escapeHtml(longitude) +
+        '</div>' +
+
+        '<div class="gps-item">' +
+        '<span class="label">定位誤差：</span>' +
+        escapeHtml(
+          Math.round(accuracy)
+        ) +
+        ' 公尺</div>';
+
+
+      showResult(
+        'GPS 定位成功，正在送出打卡資料...',
+        'success'
       );
 
 
-      showMessage(
-        '<span class="loading"></span>' +
-        'GPS 已取得，正在寫入打卡紀錄...',
-        false
+      // -----------------------------------------------------
+      // 建立資料
+      // -----------------------------------------------------
+
+      const data = {
+
+        idToken: idToken,
+
+        type: attendanceType,
+
+        latitude: latitude,
+
+        longitude: longitude,
+
+        accuracy: accuracy
+
+      };
+
+
+      console.log(
+        '送出打卡資料:',
+        data
       );
 
 
-      sendAttendance(
-        type,
-        latitude,
-        longitude,
-        accuracy
+      // -----------------------------------------------------
+      // 傳送至 Google Apps Script
+      // -----------------------------------------------------
+
+      const response =
+        await fetch(
+          GAS_API_URL,
+          {
+
+            method: 'POST',
+
+            headers: {
+              'Content-Type':
+                'text/plain;charset=utf-8'
+            },
+
+            body: JSON.stringify(data),
+
+            redirect: 'follow'
+
+          }
+        );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          '伺服器回應錯誤：HTTP ' +
+          response.status
+        );
+
+      }
+
+
+      const result =
+        await response.json();
+
+
+      console.log(
+        '後端回應:',
+        result
       );
 
-    },
 
-    function(error) {
+      // -----------------------------------------------------
+      // 判斷打卡結果
+      // -----------------------------------------------------
+
+      if (!result.success) {
+
+        throw new Error(
+          result.error ||
+          result.message ||
+          '打卡失敗'
+        );
+
+      }
+
+
+      // -----------------------------------------------------
+      // 成功
+      // -----------------------------------------------------
+
+      let message =
+        '打卡成功！<br><br>';
+
+      message +=
+        '員工：' +
+        escapeHtml(
+          result.employeeName || lineDisplayName
+        ) +
+        '<br>';
+
+      message +=
+        '類型：' +
+        escapeHtml(
+          result.type || attendanceType
+        ) +
+        '<br>';
+
+      message +=
+        '時間：' +
+        escapeHtml(
+          result.time || ''
+        ) +
+        '<br>';
+
+      message +=
+        'GPS：' +
+        escapeHtml(
+          result.latitude || latitude
+        ) +
+        ', ' +
+        escapeHtml(
+          result.longitude || longitude
+        ) +
+        '<br>';
+
+      if (result.accuracy) {
+
+        message +=
+          '定位誤差：' +
+          escapeHtml(
+            Math.round(result.accuracy)
+          ) +
+          ' 公尺<br>';
+
+      }
+
+      if (result.address) {
+
+        message +=
+          'GPS地址：' +
+          escapeHtml(
+            result.address
+          ) +
+          '<br>';
+
+      }
+
+      if (result.status) {
+
+        message +=
+          '狀態：' +
+          escapeHtml(
+            result.status
+          );
+
+      }
+
+
+      showResult(
+        message,
+        'success'
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        '打卡錯誤:',
+        error
+      );
+
+
+      showResult(
+        '打卡失敗：' +
+        escapeHtml(
+          getErrorMessage(error)
+        ),
+        'error'
+      );
+
+    } finally {
 
       isSubmitting = false;
 
-      setButtonsEnabled(true);
-
-
-      let message =
-        '無法取得 GPS 位置。';
-
-
-      if (error.code === 1) {
-
-        message =
-          '您拒絕了定位權限。' +
-          '<br>' +
-          '請允許 LINE 取得位置後再試一次。';
-
-      }
-
-
-      if (error.code === 2) {
-
-        message =
-          '目前無法取得 GPS 位置。' +
-          '<br>' +
-          '請確認手機定位功能已開啟。';
-
-      }
-
-
-      if (error.code === 3) {
-
-        message =
-          '取得 GPS 位置逾時。' +
-          '<br>' +
-          '請移動到較開闊的位置後再試一次。';
-
-      }
-
-
-      showMessage(
-        message,
-        true
-      );
-
-    },
-
-    {
-
-      enableHighAccuracy: true,
-
-      timeout: 20000,
-
-      maximumAge: 0
+      enableAttendanceButtons();
 
     }
 
-  );
-
-}
+  }
 
 
-/******************************************************
- * 8. 傳送打卡資料到 GAS
- ******************************************************/
+  // =========================================================
+  // GPS 定位
+  // =========================================================
 
-async function sendAttendance(
-  type,
-  latitude,
-  longitude,
-  accuracy
-) {
+  function getCurrentPosition() {
 
-  try {
+    return new Promise(
+      function (
+        resolve,
+        reject
+      ) {
 
-    /**************************************************
-     * 重新取得一次 ID Token
-     *
-     * LINE ID Token 有有效期限。
-     **************************************************/
+        if (!navigator.geolocation) {
 
-    lineIdToken =
-      liff.getIDToken();
+          reject(
+            new Error(
+              '此裝置不支援 GPS 定位功能。'
+            )
+          );
 
-
-    if (!lineIdToken) {
-
-      throw new Error(
-        'LINE 身分驗證資訊已失效，請重新開啟打卡系統。'
-      );
-
-    }
+          return;
+        }
 
 
-    const data = {
+        navigator.geolocation.getCurrentPosition(
 
-      idToken:
-        lineIdToken,
+          function (position) {
 
-      type:
-        type,
-
-      latitude:
-        Number(latitude),
-
-      longitude:
-        Number(longitude),
-
-      accuracy:
-        Number(accuracy)
-
-    };
-
-
-    /**************************************************
-     * POST 到 Google Apps Script
-     **************************************************/
-
-    const response =
-      await fetch(
-        GAS_API_URL,
-        {
-
-          method: 'POST',
-
-          headers: {
-
-            'Content-Type':
-              'text/plain;charset=utf-8'
+            resolve(position);
 
           },
 
-          body:
-            JSON.stringify(data),
+          function (error) {
 
-          redirect:
-            'follow'
-
-        }
-      );
+            let message =
+              'GPS 定位失敗。';
 
 
-    /**************************************************
-     * 取得 GAS 回應
-     **************************************************/
+            switch (error.code) {
 
-    const text =
-      await response.text();
+              case error.PERMISSION_DENIED:
 
+                message =
+                  '您拒絕了 GPS 定位權限，請允許瀏覽器或 LINE 使用位置資訊。';
 
-    let result;
-
-
-    try {
-
-      result =
-        JSON.parse(text);
-
-    } catch (parseError) {
-
-      console.error(
-        'GAS 回應不是 JSON：',
-        text
-      );
-
-      throw new Error(
-        '後端回應格式錯誤。'
-      );
-
-    }
+                break;
 
 
-    if (
-      !result ||
-      result.success !== true
-    ) {
+              case error.POSITION_UNAVAILABLE:
 
-      throw new Error(
-        result && result.error
-          ? result.error
-          : '打卡失敗。'
-      );
+                message =
+                  '目前無法取得 GPS 位置，請確認手機定位功能已開啟。';
 
-    }
+                break;
 
 
-    /**************************************************
-     * 打卡成功
-     **************************************************/
+              case error.TIMEOUT:
 
-    showMessage(
+                message =
+                  'GPS 定位逾時，請移動到訊號較好的位置後再試。';
 
-      '✅ 打卡成功' +
+                break;
 
-      '<br><br>' +
-
-      '員工：' +
-      escapeHtml(
-        result.employeeName
-      ) +
-
-      '<br>' +
-
-      '類型：' +
-      escapeHtml(
-        result.type
-      ) +
-
-      '<br>' +
-
-      '時間：' +
-      escapeHtml(
-        result.time
-      ) +
-
-      '<br>' +
-
-      '狀態：' +
-      escapeHtml(
-        result.status
-      ) +
-
-      '<br>' +
-
-      'GPS：' +
-      Number(result.latitude).toFixed(6) +
-      ', ' +
-      Number(result.longitude).toFixed(6),
-
-      false,
-
-      true
-    );
+            }
 
 
-    /**************************************************
-     * 顯示地址
-     **************************************************/
+            reject(
+              new Error(message)
+            );
 
-    if (result.address) {
+          },
 
-      showGPSInfo(
+          {
 
-        result.latitude,
+            enableHighAccuracy: true,
 
-        result.longitude,
+            timeout: 20000,
 
-        result.accuracy,
+            maximumAge: 0
 
-        result.address
+          }
 
-      );
+        );
 
-    }
-
-
-    /**************************************************
-     * 打卡完成後暫時鎖定按鈕
-     **************************************************/
-
-    isSubmitting = false;
-
-
-    setButtonsEnabled(false);
-
-
-  } catch (error) {
-
-    console.error(
-      '打卡錯誤：',
-      error
-    );
-
-
-    isSubmitting = false;
-
-
-    setButtonsEnabled(true);
-
-
-    showMessage(
-
-      '❌ 打卡失敗' +
-
-      '<br><br>' +
-
-      escapeHtml(
-        getErrorMessage(error)
-      ),
-
-      true
-
+      }
     );
 
   }
 
-}
 
+  // =========================================================
+  // 顯示打卡結果
+  // =========================================================
 
-/******************************************************
- * 9. 控制按鈕
- ******************************************************/
-
-function setButtonsEnabled(enabled) {
-
-  document.getElementById(
-    'clockInButton'
-  ).disabled = !enabled;
-
-
-  document.getElementById(
-    'clockOutButton'
-  ).disabled = !enabled;
-
-}
-
-
-/******************************************************
- * 10. 顯示訊息
- ******************************************************/
-
-function showMessage(
-  message,
-  error,
-  success
-) {
-
-  const element =
-    document.getElementById(
-      'message'
-    );
-
-
-  element.innerHTML =
-    message;
-
-
-  element.className =
-    '';
-
-
-  if (error) {
-
-    element.classList.add(
-      'message-error'
-    );
-
-  } else if (success) {
-
-    element.classList.add(
-      'message-success'
-    );
-
-  } else {
-
-    element.classList.add(
-      'message-normal'
-    );
-
-  }
-
-}
-
-
-/******************************************************
- * 11. 顯示 GPS 資訊
- ******************************************************/
-
-function showGPSInfo(
-  latitude,
-  longitude,
-  accuracy,
-  address
-) {
-
-  const element =
-    document.getElementById(
-      'gpsInfo'
-    );
-
-
-  let html =
-
-    '<strong>📍 GPS 位置</strong>' +
-
-    '<br>' +
-
-    '緯度：' +
-    Number(latitude).toFixed(6) +
-
-    '<br>' +
-
-    '經度：' +
-    Number(longitude).toFixed(6) +
-
-    '<br>' +
-
-    '定位精度：約 ' +
-    Math.round(
-      Number(accuracy)
-    ) +
-    ' 公尺';
-
-
-  if (address) {
-
-    html +=
-
-      '<br><br>' +
-
-      '<strong>地址</strong>' +
-
-      '<br>' +
-
-      escapeHtml(
-        address
-      );
-
-  }
-
-
-  element.innerHTML =
-    html;
-
-
-  element.style.display =
-    'block';
-
-}
-
-
-/******************************************************
- * 12. HTML Escape
- ******************************************************/
-
-function escapeHtml(text) {
-
-  const div =
-    document.createElement(
-      'div'
-    );
-
-
-  div.textContent =
-    text === undefined ||
-    text === null
-      ? ''
-      : String(text);
-
-
-  return div.innerHTML;
-
-}
-
-
-/******************************************************
- * 13. 錯誤訊息
- ******************************************************/
-
-function getErrorMessage(error) {
-
-  if (!error) {
-
-    return '未知錯誤';
-
-  }
-
-
-  if (
-    error.message
+  function showResult(
+    message,
+    type
   ) {
 
-    return error.message;
+    const element =
+      document.getElementById('result');
+
+    element.innerHTML =
+      message;
+
+    element.className =
+      'result ' + type;
 
   }
 
 
-  return String(error);
+  // =========================================================
+  // 錯誤訊息處理
+  // =========================================================
 
-}
+  function getErrorMessage(
+    error
+  ) {
+
+    if (!error) {
+
+      return '未知錯誤';
+
+    }
+
+
+    if (error.message) {
+
+      return error.message;
+
+    }
+
+
+    return String(error);
+
+  }
+
+
+  // =========================================================
+  // HTML Escape
+  // =========================================================
+
+  function escapeHtml(
+    value
+  ) {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+
+      return '';
+
+    }
+
+
+    return String(value)
+
+      .replace(
+        /&/g,
+        '&amp;'
+      )
+
+      .replace(
+        /</g,
+        '&lt;'
+      )
+
+      .replace(
+        />/g,
+        '&gt;'
+      )
+
+      .replace(
+        /"/g,
+        '&quot;'
+      )
+
+      .replace(
+        /'/g,
+        '&#039;'
+      );
+
+  }
 
 </script>
 
 </body>
-
 </html>
+```
