@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <title>員工打卡</title>
+
+  <!-- LINE LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+    }
+
+    body {
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Noto Sans TC",
+        Arial,
+        sans-serif;
+
+      background: #f5f5f5;
+
+      color: #333;
+
+      padding:
+        20px
+        16px
+        30px;
+
+    }
+
+
+    .container {
+
+      width: 100%;
+
+      max-width: 430px;
+
+      margin:
+        0 auto;
+
+      background: #fff;
+
+      border-radius: 18px;
+
+      padding:
+        28px
+        20px
+        24px;
+
+      box-shadow:
+        0 4px 18px
+        rgba(0, 0, 0, 0.08);
+
+    }
+
+
+    h1 {
+
+      margin:
+        0 0 8px;
+
+      text-align: center;
+
+      font-size: 28px;
+
+      font-weight: 700;
+
+    }
+
+
+    .subtitle {
+
+      text-align: center;
+
+      color: #777;
+
+      font-size: 14px;
+
+      margin-bottom: 24px;
+
+    }
+
+
+    #employee {
+
+      background: #f7f7f7;
+
+      border-radius: 12px;
+
+      padding: 16px;
+
+      text-align: center;
+
+      line-height: 1.7;
+
+      margin-bottom: 20px;
+
+      min-height: 55px;
+
+    }
+
+
+    .employee-name {
+
+      font-size: 20px;
+
+      font-weight: 700;
+
+    }
+
+
+    .status {
+
+      font-size: 14px;
+
+      color: #666;
+
+    }
+
+
+    button {
+
+      width: 100%;
+
+      border: none;
+
+      border-radius: 12px;
+
+      padding: 17px 15px;
+
+      margin-top: 12px;
+
+      font-size: 19px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+
+      transition:
+        opacity 0.2s,
+        transform 0.1s;
+
+    }
+
+
+    button:active {
+
+      transform: scale(0.98);
+
+    }
+
+
+    button:disabled {
+
+      opacity: 0.5;
+
+      cursor: not-allowed;
+
+      transform: none;
+
+    }
+
+
+    .work {
+
+      background: #4caf50;
+
+      color: white;
+
+    }
+
+
+    .off {
+
+      background: #f44336;
+
+      color: white;
+
+    }
+
+
+    #message {
+
+      margin-top: 22px;
+
+      padding: 14px;
+
+      border-radius: 10px;
+
+      font-size: 15px;
+
+      line-height: 1.7;
+
+      text-align: center;
+
+      min-height: 20px;
+
+      word-break: break-word;
+
+    }
+
+
+    .message-normal {
+
+      background: #f5f5f5;
+
+      color: #333;
+
+    }
+
+
+    .message-success {
+
+      background: #e8f5e9;
+
+      color: #2e7d32;
+
+    }
+
+
+    .message-error {
+
+      background: #ffebee;
+
+      color: #c62828;
+
+    }
+
+
+    .gps-info {
+
+      margin-top: 18px;
+
+      padding: 14px;
+
+      background: #fafafa;
+
+      border-radius: 10px;
+
+      font-size: 13px;
+
+      line-height: 1.7;
+
+      color: #666;
+
+      text-align: left;
+
+      display: none;
+
+    }
+
+
+    .footer {
+
+      margin-top: 22px;
+
+      text-align: center;
+
+      font-size: 12px;
+
+      color: #999;
+
+    }
+
+
+    .loading {
+
+      display: inline-block;
+
+      width: 16px;
+
+      height: 16px;
+
+      border: 2px solid #ccc;
+
+      border-top-color: #555;
+
+      border-radius: 50%;
+
+      animation: spin 0.8s linear infinite;
+
+      vertical-align: -3px;
+
+      margin-right: 6px;
+
+    }
+
+
+    @keyframes spin {
+
+      to {
+        transform: rotate(360deg);
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+  <div class="container">
+
+    <h1>員工打卡</h1>
+
+    <div class="subtitle">
+      LINE 出勤紀錄系統
+    </div>
+
+
+    <div id="employee">
+
+      <span class="loading"></span>
+      正在初始化 LINE...
+
+    </div>
+
+
+    <button
+      id="clockInButton"
+      class="work"
+      onclick="clockIn()"
+      disabled
+    >
+      🟢 上班打卡
+    </button>
+
+
+    <button
+      id="clockOutButton"
+      class="off"
+      onclick="clockOut()"
+      disabled
+    >
+      🔴 下班打卡
+    </button>
+
+
+    <div
+      id="message"
+      class="message-normal"
+    ></div>
+
+
+    <div
+      id="gpsInfo"
+      class="gps-info"
+    ></div>
+
+
+    <div class="footer">
+      GPS 定位僅用於出勤紀錄
+    </div>
+
+  </div>
+
+
+<script>
+
+/******************************************************
+ * 1. 系統設定
+ ******************************************************/
+
+const LIFF_ID =
+  '2011816957-jjlZqcSN';
+
+
+const GAS_API_URL =
+  'https://script.google.com/macros/s/AKfycbwxVKjpnDVqmAwa5jg76_pHgFBBBk5T3HSXxjKXnMzAxSHinM-cR3EVu7iNGEv0vTodLw/exec';
+
+
+/******************************************************
+ * 2. 全域變數
+ ******************************************************/
+
+let lineIdToken = null;
+
+let lineProfile = null;
+
+let isSubmitting = false;
+
+
+/******************************************************
+ * 3. 頁面初始化
+ ******************************************************/
+
+window.addEventListener(
+  'load',
+  initializeLIFF
+);
+
+
+async function initializeLIFF() {
+
+  const employeeElement =
+    document.getElementById('employee');
+
+
+  try {
+
+    employeeElement.innerHTML =
+      '<span class="loading"></span>' +
+      '正在初始化 LINE...';
+
+
+    /**************************************************
+     * 初始化 LIFF
+     **************************************************/
+
+    await liff.init({
+      liffId: LIFF_ID,
+      withLoginOnExternalBrowser: true
+    });
+
+
+    /**************************************************
+     * 如果是在外部瀏覽器且尚未登入
+     **************************************************/
+
+    if (
+      !liff.isLoggedIn() &&
+      !liff.isInClient()
+    ) {
+
+      employeeElement.innerHTML =
+        '<span class="loading"></span>' +
+        '正在進行 LINE 登入...';
+
+
+      liff.login();
+
+      return;
+
+    }
+
+
+    /**************************************************
+     * 取得 ID Token
+     **************************************************/
+
+    lineIdToken =
+      liff.getIDToken();
+
+
+    if (!lineIdToken) {
+
+      throw new Error(
+        '無法取得 LINE ID Token。'
+      );
+
+    }
+
+
+    /**************************************************
+     * 取得前端顯示用的 LINE 個人資料
+     *
+     * 注意：
+     * 這些資料只用於前端顯示。
+     *
+     * 真正身分驗證仍由 ID Token + GAS 完成。
+     **************************************************/
+
+    try {
+
+      lineProfile =
+        await liff.getProfile();
+
+    } catch (profileError) {
+
+      console.warn(
+        '無法取得 LINE Profile：',
+        profileError
+      );
+
+      lineProfile = null;
+
+    }
+
+
+    /**************************************************
+     * 顯示員工資訊
+     **************************************************/
+
+    let displayName =
+      'LINE 使用者';
+
+
+    if (
+      lineProfile &&
+      lineProfile.displayName
+    ) {
+
+      displayName =
+        lineProfile.displayName;
+
+    }
+
+
+    employeeElement.innerHTML =
+
+      '<div class="employee-name">' +
+      escapeHtml(displayName) +
+      '</div>' +
+
+      '<div class="status">' +
+      'LINE 身分驗證成功，可以打卡' +
+      '</div>';
+
+
+    /**************************************************
+     * 啟用按鈕
+     **************************************************/
+
+    setButtonsEnabled(true);
+
+
+    showMessage(
+      'LINE 身分確認成功，可以開始打卡。',
+      false
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      'LIFF 初始化錯誤：',
+      error
+    );
+
+
+    employeeElement.innerHTML =
+      '❌ LINE 初始化失敗';
+
+
+    showMessage(
+      '錯誤：' +
+      getErrorMessage(error),
+      true
+    );
+
+
+    setButtonsEnabled(false);
+
+  }
+
+}
+
+
+/******************************************************
+ * 4. 上班打卡
+ ******************************************************/
+
+function clockIn() {
+
+  startAttendance(
+    '上班'
+  );
+
+}
+
+
+/******************************************************
+ * 5. 下班打卡
+ ******************************************************/
+
+function clockOut() {
+
+  startAttendance(
+    '下班'
+  );
+
+}
+
+
+/******************************************************
+ * 6. 開始打卡
+ ******************************************************/
+
+function startAttendance(type) {
+
+  if (isSubmitting) {
+
+    return;
+
+  }
+
+
+  if (!lineIdToken) {
+
+    showMessage(
+      'LINE 身分尚未完成驗證，請重新開啟打卡系統。',
+      true
+    );
+
+    return;
+
+  }
+
+
+  if (!navigator.geolocation) {
+
+    showMessage(
+      '此裝置不支援 GPS 定位。',
+      true
+    );
+
+    return;
+
+  }
+
+
+  isSubmitting = true;
+
+
+  setButtonsEnabled(false);
+
+
+  showMessage(
+    '<span class="loading"></span>' +
+    '正在取得您的 GPS 位置，請稍候...',
+    false
+  );
+
+
+  getLocation(
+    type
+  );
+
+}
+
+
+/******************************************************
+ * 7. 取得 GPS
+ ******************************************************/
+
+function getLocation(type) {
+
+  navigator.geolocation.getCurrentPosition(
+
+    function(position) {
+
+      const latitude =
+        position.coords.latitude;
+
+      const longitude =
+        position.coords.longitude;
+
+      const accuracy =
+        position.coords.accuracy;
+
+
+      showGPSInfo(
+        latitude,
+        longitude,
+        accuracy
+      );
+
+
+      showMessage(
+        '<span class="loading"></span>' +
+        'GPS 已取得，正在寫入打卡紀錄...',
+        false
+      );
+
+
+      sendAttendance(
+        type,
+        latitude,
+        longitude,
+        accuracy
+      );
+
+    },
+
+    function(error) {
+
+      isSubmitting = false;
+
+      setButtonsEnabled(true);
+
+
+      let message =
+        '無法取得 GPS 位置。';
+
+
+      if (error.code === 1) {
+
+        message =
+          '您拒絕了定位權限。' +
+          '<br>' +
+          '請允許 LINE 取得位置後再試一次。';
+
+      }
+
+
+      if (error.code === 2) {
+
+        message =
+          '目前無法取得 GPS 位置。' +
+          '<br>' +
+          '請確認手機定位功能已開啟。';
+
+      }
+
+
+      if (error.code === 3) {
+
+        message =
+          '取得 GPS 位置逾時。' +
+          '<br>' +
+          '請移動到較開闊的位置後再試一次。';
+
+      }
+
+
+      showMessage(
+        message,
+        true
+      );
+
+    },
+
+    {
+
+      enableHighAccuracy: true,
+
+      timeout: 20000,
+
+      maximumAge: 0
+
+    }
+
+  );
+
+}
+
+
+/******************************************************
+ * 8. 傳送打卡資料到 GAS
+ ******************************************************/
+
+async function sendAttendance(
+  type,
+  latitude,
+  longitude,
+  accuracy
+) {
+
+  try {
+
+    /**************************************************
+     * 重新取得一次 ID Token
+     *
+     * LINE ID Token 有有效期限。
+     **************************************************/
+
+    lineIdToken =
+      liff.getIDToken();
+
+
+    if (!lineIdToken) {
+
+      throw new Error(
+        'LINE 身分驗證資訊已失效，請重新開啟打卡系統。'
+      );
+
+    }
+
+
+    const data = {
+
+      idToken:
+        lineIdToken,
+
+      type:
+        type,
+
+      latitude:
+        Number(latitude),
+
+      longitude:
+        Number(longitude),
+
+      accuracy:
+        Number(accuracy)
+
+    };
+
+
+    /**************************************************
+     * POST 到 Google Apps Script
+     **************************************************/
+
+    const response =
+      await fetch(
+        GAS_API_URL,
+        {
+
+          method: 'POST',
+
+          headers: {
+
+            'Content-Type':
+              'text/plain;charset=utf-8'
+
+          },
+
+          body:
+            JSON.stringify(data),
+
+          redirect:
+            'follow'
+
+        }
+      );
+
+
+    /**************************************************
+     * 取得 GAS 回應
+     **************************************************/
+
+    const text =
+      await response.text();
+
+
+    let result;
+
+
+    try {
+
+      result =
+        JSON.parse(text);
+
+    } catch (parseError) {
+
+      console.error(
+        'GAS 回應不是 JSON：',
+        text
+      );
+
+      throw new Error(
+        '後端回應格式錯誤。'
+      );
+
+    }
+
+
+    if (
+      !result ||
+      result.success !== true
+    ) {
+
+      throw new Error(
+        result && result.error
+          ? result.error
+          : '打卡失敗。'
+      );
+
+    }
+
+
+    /**************************************************
+     * 打卡成功
+     **************************************************/
+
+    showMessage(
+
+      '✅ 打卡成功' +
+
+      '<br><br>' +
+
+      '員工：' +
+      escapeHtml(
+        result.employeeName
+      ) +
+
+      '<br>' +
+
+      '類型：' +
+      escapeHtml(
+        result.type
+      ) +
+
+      '<br>' +
+
+      '時間：' +
+      escapeHtml(
+        result.time
+      ) +
+
+      '<br>' +
+
+      '狀態：' +
+      escapeHtml(
+        result.status
+      ) +
+
+      '<br>' +
+
+      'GPS：' +
+      Number(result.latitude).toFixed(6) +
+      ', ' +
+      Number(result.longitude).toFixed(6),
+
+      false,
+
+      true
+    );
+
+
+    /**************************************************
+     * 顯示地址
+     **************************************************/
+
+    if (result.address) {
+
+      showGPSInfo(
+
+        result.latitude,
+
+        result.longitude,
+
+        result.accuracy,
+
+        result.address
+
+      );
+
+    }
+
+
+    /**************************************************
+     * 打卡完成後暫時鎖定按鈕
+     **************************************************/
+
+    isSubmitting = false;
+
+
+    setButtonsEnabled(false);
+
+
+  } catch (error) {
+
+    console.error(
+      '打卡錯誤：',
+      error
+    );
+
+
+    isSubmitting = false;
+
+
+    setButtonsEnabled(true);
+
+
+    showMessage(
+
+      '❌ 打卡失敗' +
+
+      '<br><br>' +
+
+      escapeHtml(
+        getErrorMessage(error)
+      ),
+
+      true
+
+    );
+
+  }
+
+}
+
+
+/******************************************************
+ * 9. 控制按鈕
+ ******************************************************/
+
+function setButtonsEnabled(enabled) {
+
+  document.getElementById(
+    'clockInButton'
+  ).disabled = !enabled;
+
+
+  document.getElementById(
+    'clockOutButton'
+  ).disabled = !enabled;
+
+}
+
+
+/******************************************************
+ * 10. 顯示訊息
+ ******************************************************/
+
+function showMessage(
+  message,
+  error,
+  success
+) {
+
+  const element =
+    document.getElementById(
+      'message'
+    );
+
+
+  element.innerHTML =
+    message;
+
+
+  element.className =
+    '';
+
+
+  if (error) {
+
+    element.classList.add(
+      'message-error'
+    );
+
+  } else if (success) {
+
+    element.classList.add(
+      'message-success'
+    );
+
+  } else {
+
+    element.classList.add(
+      'message-normal'
+    );
+
+  }
+
+}
+
+
+/******************************************************
+ * 11. 顯示 GPS 資訊
+ ******************************************************/
+
+function showGPSInfo(
+  latitude,
+  longitude,
+  accuracy,
+  address
+) {
+
+  const element =
+    document.getElementById(
+      'gpsInfo'
+    );
+
+
+  let html =
+
+    '<strong>📍 GPS 位置</strong>' +
+
+    '<br>' +
+
+    '緯度：' +
+    Number(latitude).toFixed(6) +
+
+    '<br>' +
+
+    '經度：' +
+    Number(longitude).toFixed(6) +
+
+    '<br>' +
+
+    '定位精度：約 ' +
+    Math.round(
+      Number(accuracy)
+    ) +
+    ' 公尺';
+
+
+  if (address) {
+
+    html +=
+
+      '<br><br>' +
+
+      '<strong>地址</strong>' +
+
+      '<br>' +
+
+      escapeHtml(
+        address
+      );
+
+  }
+
+
+  element.innerHTML =
+    html;
+
+
+  element.style.display =
+    'block';
+
+}
+
+
+/******************************************************
+ * 12. HTML Escape
+ ******************************************************/
+
+function escapeHtml(text) {
+
+  const div =
+    document.createElement(
+      'div'
+    );
+
+
+  div.textContent =
+    text === undefined ||
+    text === null
+      ? ''
+      : String(text);
+
+
+  return div.innerHTML;
+
+}
+
+
+/******************************************************
+ * 13. 錯誤訊息
+ ******************************************************/
+
+function getErrorMessage(error) {
+
+  if (!error) {
+
+    return '未知錯誤';
+
+  }
+
+
+  if (
+    error.message
+  ) {
+
+    return error.message;
+
+  }
+
+
+  return String(error);
+
+}
+
+</script>
+
+</body>
+
+</html>
